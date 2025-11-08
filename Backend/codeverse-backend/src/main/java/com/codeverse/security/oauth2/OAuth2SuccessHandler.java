@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -30,11 +31,18 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${FRONTEND_BASE_URL:http://localhost:5173}")
+    private String frontendBaseUrl;
+
     @Autowired
     public OAuth2SuccessHandler(JwtTokenProvider jwtTokenProvider, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    private String getFrontendUrl() {
+        return frontendBaseUrl;
     }
 
     @Override
@@ -64,8 +72,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
 
         if (extractedEmail == null || extractedEmail.isEmpty()) {
+            String frontendUrl = getFrontendUrl();
             String msg = URLEncoder.encode("Email not provided by OAuth2 provider", StandardCharsets.UTF_8);
-            response.sendRedirect("http://localhost:5173/login?error=" + msg);
+            response.sendRedirect(frontendUrl + "/login?error=" + msg);
             return;
         }
 
@@ -94,17 +103,19 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
             String token = jwtTokenProvider.generateToken(user.getEmail());
 
+            String frontendUrl = getFrontendUrl();
             if (token != null && !token.isEmpty()) {
                 // Redirect to frontend OAuth callback with token
-                response.sendRedirect("http://localhost:5173/oauth-callback?token=" + token);
+                response.sendRedirect(frontendUrl + "/oauth-callback?token=" + token);
             } else {
                 String msg = URLEncoder.encode("Token generation failed", StandardCharsets.UTF_8);
-                response.sendRedirect("http://localhost:5173/login?error=" + msg);
+                response.sendRedirect(frontendUrl + "/login?error=" + msg);
             }
         } catch (Exception e) {
             logger.error("OAuth2 sign-in failed", e);
+            String frontendUrl = getFrontendUrl();
             String msg = URLEncoder.encode("OAuth2 sign-in failed", StandardCharsets.UTF_8);
-            response.sendRedirect("http://localhost:5173/login?error=" + msg);
+            response.sendRedirect(frontendUrl + "/login?error=" + msg);
         }
     }
 
