@@ -1,0 +1,89 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: codeverse-postgres
+    environment:
+      POSTGRES_DB: codeverse
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 0000
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - codeverse-network
+
+  # Spring Boot Backend
+  backend:
+    build:
+      context: ./Backend/codeverse-backend
+      dockerfile: Dockerfile
+    container_name: codeverse-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/codeverse
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 0000
+      APP_JWT_SECRET: A4B5ED519FEE1BA2E5D905C3309E247C3B7BAB4608E011302954F775D9CC1741
+      APP_JWT_EXPIRATION_MS: 86400000
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-1092271303998-38ma8jmmn9jutrfbhpck9h559v3rrt2m.apps.googleusercontent.com}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-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}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:8081/login/oauth2/code/google}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-Ov23liF7knVm9rq1gyIO}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-94f5f6f5c94bda874c003bac85f58a93f444f705}
+      GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI:-http://localhost:8081/login/oauth2/code/github}
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - codeverse-network
+    restart: unless-stopped
+
+  # Node.js Code Execution Proxy Server
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: codeverse-server
+    environment:
+      PORT: 8082
+    ports:
+      - "8082:8082"
+    networks:
+      - codeverse-network
+    restart: unless-stopped
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./Frontend/Codeverse-main/codeverse
+      dockerfile: Dockerfile
+      args:
+        VITE_BACKEND_BASE: http://localhost:8081
+        VITE_API_BASE: http://localhost:8081/api
+    container_name: codeverse-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - server
+    networks:
+      - codeverse-network
+    restart: unless-stopped
+
+networks:
+  codeverse-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+
+

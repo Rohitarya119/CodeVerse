@@ -1,0 +1,92 @@
+/* LoginPage.css */
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-wrapper {
+  width: 100%;
+  max-width: 450px;
+}
+
+.login-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-header .logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.login-header .logo-icon {
+  font-size: 32px;
+  color: #667eea;
+}
+
+.login-header h1 {
+  font-size: 28px;
+  color: #667eea;
+  margin: 0;
+}
+
+.login-header h2 {
+  font-size: 24px;
+  color: #1a1a2e;
+  margin: 10px 0;
+}
+
+.login-header p {
+  color: #666;
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.checkbox-label input {
+  width: auto;
+}
+
+.forgot-link {
+  color: #667eea;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.signup-link {
+  text-align: center;
+  margin-top: 20px;
+  color: #666;
+}
+
+.signup-link a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+}
